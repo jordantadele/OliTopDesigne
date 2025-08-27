@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8c2f39">
+  <meta name="description" content="EthioCloth Admin Panel - Manage your traditional Ethiopian clothing collection">
+  <title>EthioCloth Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    :root {
+      --primary: #8c2f39;
+      --secondary: #f2c94c;
+      --dark: #2d2817;
+      --light: #f5f5f5;
+      --accent: #33691e;
+      --sidebar-width: 250px;
+      --header-height: 70px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      color: var(--dark);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* App Install Prompt */
+    .install-prompt {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 10000;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translate(-50%, 100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+    }
+
+    .install-prompt button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .install-prompt button:last-child {
+      background: #e0e0e0;
+      color: #555;
+    }
+
+    /* App Shell */
+    .app-shell {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: linear-gradient(135deg, var(--primary), #6b1f28);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      overflow-y: auto;
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
+      padding-top: var(--header-height);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: fixed;
+      top: 0;
+      width: var(--sidebar-width);
+      background: inherit;
+      z-index: 1001;
+    }
+
+    .sidebar-header h2 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .sidebar-menu {
+      padding: 1rem 0;
+    }
+
+    .menu-item {
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      font-size: 1rem;
+    }
+
+    .menu-item.active,
+    .menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--secondary);
+    }
+
+    .menu-item:active {
+      transform: scale(0.98);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 2rem;
+      transition: margin-left 0.3s ease-in-out;
+      padding-top: calc(var(--header-height) + 1rem);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      background: #f0f2f5;
+      z-index: 900;
+      padding: 1rem 2rem;
+      height: var(--header-height);
+      transition: left 0.3s ease-in-out;
+    }
+
+    .header h1 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background-color: rgba(140, 47, 57, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .card h3 {
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+      font-size: 1.8rem;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Content Sections */
+    .content-section {
+      background: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--primary);
+      color: white;
+      padding: 0.7rem 1.4rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #7a2832;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: var(--dark);
+    }
+
+    .btn-secondary:hover {
+      background-color: #e3b63b;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    table th,
+    table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .status {
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-published {
+      background-color: #e6f7ee;
+      color: #0c7c59;
+    }
+
+    .status-draft {
+      background-color: #fef3cd;
+      color: #856404;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      padding: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .action-edit {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .action-edit:hover {
+      background-color: #bbdefb;
+    }
+
+    .action-delete {
+      background-color: #ffebee;
+      color: #d32f2f;
+    }
+
+    .action-delete:hover {
+      background-color: #ffcdd2;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea.form-control {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .image-preview {
+      width: 100%;
+      max-width: 300px;
+      height: 200px;
+      border: 2px dashed #ddd;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Login */
+    .login-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary), #6b1f28);
+      padding: 1rem;
+    }
+
+    .login-form {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-form h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--primary);
+    }
+
+    /* Mobile Navigation */
+    .menu-toggle {
+      display: none;
+      font-size: 1.5rem;
+      color: var(--dark);
+      cursor: pointer;
+      position: fixed;
+      top: 1.2rem;
+      left: 1rem;
+      z-index: 1001;
+      transition: color 0.3s;
+      background: var(--secondary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-toggle:hover {
+      color: var(--primary);
+    }
+
+    /* Offline Indicator */
+    .offline-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #d32f2f;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 10000;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+
+    /* Sync Indicator */
+    .sync-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0c7c59;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 10000;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 250px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding-top: calc(var(--header-height) + 1rem);
+      }
+
+      .header {
+        left: 0;
+      }
+
+      .dashboard-cards {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .main-content {
+        padding: 1rem;
+        padding-top: calc(var(--header-height) + 1rem);
+      }
+
+      .content-section {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .header {
+        padding: 1rem;
+      }
+
+      .user-info span {
+        display: none;
+      }
+
+      .login-form {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* Utility Classes */
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, .3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* PWA Specific Styles */
+    .app-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 28px;
+      margin-right: 15px;
+    }
+
+    #loginPage {
+      width: 100%;
+    }
+
+    #adminPanel {
+      display: none;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 5px;
+      background-color: #0c7c59;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateX(100%);
+      transition: transform 0.3s;
+      z-index: 1000;
+      max-width: 350px;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.error {
+      background-color: #d32f2f;
+    }
+
+    /* Swipe to refresh */
+    .pull-to-refresh {
+      text-align: center;
+      padding: 15px;
+      color: #666;
+      display: none;
+    }
+
+    .logo-img {
+      height: 30px;
+      width: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <!-- Offline Indicator -->
+    <div class="offline-indicator">
+      <i class="fas fa-wifi"></i> You are offline
+    </div>
+
+    <!-- Sync Indicator -->
+    <div class="sync-indicator">
+      <i class="fas fa-sync-alt"></i> Syncing data...
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt hidden">
+      <div class="app-icon">
+        <i class="fas fa-vest"></i>
+      </div>
+      <div>
+        <p>Install OliTopDesign Admin</p>
+        <small>Access your admin panel anytime</small>
+      </div>
+      <button id="installApp">Install</button>
+      <button id="dismissInstall">Not Now</button>
+    </div>
+
+    <div id="loginPage">
+      <div class="login-container">
+        <div class="login-form">
+          <h2><img src="C:\Users\YOR\Downloads\photo_2025-03-15_08-51-38-removebg-preview.png" alt="OliTopDesign Logo"
+              class="logo-img"> OliTopDesign Admin</h2>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-control" placeholder="admin@ethiocloth.com">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" class="form-control" placeholder="Enter your password">
+          </div>
+          <button id="loginBtn" class="btn" style="width: 100%;">
+            <span id="loginText">Login</span>
+            <span id="loginSpinner" class="hidden"></span>
+          </button>
+          <p id="loginMessage" style="margin-top: 1rem; text-align: center; color: #d32f2f;"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="adminPanel">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2><i class="fas fa-vest"></i> <span>OliTopDesign</span></h2>
+        </div>
+        <div class="sidebar-menu">
+          <div class="menu-item active" data-section="dashboard">
+            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+          </div>
+          <div class="menu-item" data-section="gallery">
+            <i class="fas fa-images"></i> <span>Gallery Management</span>
+          </div>
+          <div class="menu-item" data-section="addItem">
+            <i class="fas fa-plus-circle"></i> <span>Add New Item</span>
+          </div>
+          <div class="menu-item" data-section="settings">
+            <i class="fas fa-cog"></i> <span>Settings</span>
+          </div>
+          <div class="menu-item" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <i class="fas fa-bars menu-toggle"></i>
+        <div class="header">
+          <h1>Admin Dashboard</h1>
+          <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <span id="userEmail">Admin User</span>
+          </div>
+        </div>
+
+        <!-- Pull to refresh indicator -->
+        <div class="pull-to-refresh">
+          <i class="fas fa-sync-alt"></i> Pull to refresh
+        </div>
+
+        <div id="dashboardSection" class="content-section">
+          <div class="section-header">
+            <h2>Dashboard Overview</h2>
+            <span id="currentDate"></span>
+          </div>
+
+          <div class="dashboard-cards">
+            <div class="card">
+              <div class="card-icon">
+                <i class="fas fa-images"></i>
+              </div>
+              <h3 id="totalItems">0</h3>
+              <p>Total Gallery Items</p>
+            </div>
+            <div class="card">
+              <div class="card-icon">
+                <i class="fas fa-eye"></i>
+              </div>
+              <h3>1,254</h3>
+              <p>Total Views</p>
+            </div>
+            <div class="card">
+              <div class="card-icon">
+                <i class="fas fa-calendar"></i>
+              </div>
+              <h3>12</h3>
+              <p>Events This Month</p>
+            </div>
+          </div>
+
+          <div class="section-header">
+            <h2>Recent Activity</h2>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Date Added</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recentItems">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="gallerySection" class="content-section hidden">
+          <div class="section-header">
+            <h2>Gallery Management</h2>
+            <button class="btn btn-secondary" id="refreshGallery"><i class="fas fa-sync-alt"></i> Refresh</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Date Added</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="galleryItems">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="addItemSection" class="content-section hidden">
+          <div class="section-header">
+            <h2>Add New Gallery Item</h2>
+          </div>
+
+          <form id="addItemForm">
+            <div class="form-group">
+              <label for="itemTitle">Title *</label>
+              <input type="text" id="itemTitle" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="itemDescription">Description</label>
+              <textarea id="itemDescription" class="form-control"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="itemImage">Image *</label>
+              <input type="file" id="itemImage" class="form-control" accept="image/*" required>
+              <div class="image-preview" id="imagePreview">
+                <span>Image Preview</span>
+              </div>
+              <div class="progress-bar" id="progressBarContainer" style="display: none;">
+                <div class="progress" id="progressBar"></div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn"><i class="fas fa-plus-circle"></i> Add Item</button>
+            <p id="formMessage" style="margin-top: 1rem;"></p>
+          </form>
+        </div>
+
+        <div id="settingsSection" class="content-section hidden">
+          <div class="section-header">
+            <h2>Settings</h2>
+          </div>
+
+          <div class="form-group">
+            <label for="siteTitle">Site Title</label>
+            <input type="text" id="siteTitle" class="form-control" value="OliTopDesign Showroom">
+          </div>
+
+          <div class="form-group">
+            <label for="adminEmail">Admin Email</label>
+            <input type="email" id="adminEmail" class="form-control" value="admin@OliTopDesign.com">
+          </div>
+
+          <div class="form-group">
+            <label for="maxFileSize">Maximum File Size (MB)</label>
+            <input type="number" id="maxFileSize" class="form-control" value="5">
+          </div>
+
+          <button class="btn"><i class="fas fa-save"></i> Save Settings</button>
+
+          <div class="form-group" style="margin-top: 2rem;">
+            <label>PWA Controls</label>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button type="button" class="btn btn-secondary" id="clearCache">
+                <i class="fas fa-trash"></i> Clear Cache
+              </button>
+              <button type="button" class="btn btn-secondary" id="checkUpdate">
+                <i class="fas fa-sync"></i> Check for Updates
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase
+    const supabaseUrl = 'https://lkvfxpwngckmyfrmygkj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrdmZ4cHduZ2NrbXlmcm15Z2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMTIzMTYsImV4cCI6MjA3MTg4ODMxNn0.tbqJGNeDgnhv9Bgthzyi5yGhRc2_b_m_ulCDSnxngrU';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // DOM Elements
+    const loginPage = document.getElementById('loginPage');
+    const adminPanel = document.getElementById('adminPanel');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginMessage = document.getElementById('loginMessage');
+    const loginText = document.getElementById('loginText');
+    const loginSpinner = document.getElementById('loginSpinner');
+    const menuItems = document.querySelectorAll('.menu-item');
+    const contentSections = document.querySelectorAll('.content-section');
+    const currentDateEl = document.getElementById('currentDate');
+    const totalItemsEl = document.getElementById('totalItems');
+    const recentItemsEl = document.getElementById('recentItems');
+    const galleryItemsEl = document.getElementById('galleryItems');
+    const refreshGalleryBtn = document.getElementById('refreshGallery');
+    const addItemForm = document.getElementById('addItemForm');
+    const imagePreview = document.getElementById('imagePreview');
+    const itemImage = document.getElementById('itemImage');
+    const formMessage = document.getElementById('formMessage');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const progressBar = document.getElementById('progressBar');
+    const notification = document.getElementById('notification');
+    const userAvatar = document.getElementById('userAvatar');
+    const userEmail = document.getElementById('userEmail');
+    const imageInputLabel = document.querySelector('label[for="itemImage"]');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const offlineIndicator = document.querySelector('.offline-indicator');
+    const syncIndicator = document.querySelector('.sync-indicator');
+    const installPrompt = document.querySelector('.install-prompt');
+    const installAppBtn = document.getElementById('installApp');
+    const dismissInstallBtn = document.getElementById('dismissInstall');
+    const clearCacheBtn = document.getElementById('clearCache');
+    const checkUpdateBtn = document.getElementById('checkUpdate');
+    const pullToRefresh = document.querySelector('.pull-to-refresh');
+
+    // State variables
+    let currentEditingId = null;
+    let currentImageUrl = null;
+    let deferredPrompt = null;
+    let isOnline = navigator.onLine;
+    let refreshStartY = null;
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Set current date
+    currentDateEl.textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Check online/offline status
+    window.addEventListener('online', () => {
+      isOnline = true;
+      offlineIndicator.style.display = 'none';
+      showNotification('Connection restored', false);
+      // Sync any pending changes
+      syncPendingChanges();
+    });
+
+    window.addEventListener('offline', () => {
+      isOnline = false;
+      offlineIndicator.style.display = 'block';
+      showNotification('You are offline', true);
+    });
+
+    // Check if user is already logged in
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        loginPage.style.display = 'none';
+        adminPanel.style.display = 'flex';
+        userAvatar.textContent = session.user.email.charAt(0).toUpperCase();
+        userEmail.textContent = session.user.email;
+        loadDashboardData();
+        loadGalleryItems();
+      }
+    }
+
+    // Menu navigation
+    menuItems.forEach(item => {
+      item.addEventListener('click', function () {
+        if (this.id === 'logoutBtn') {
+          logout();
+          return;
+        }
+
+        const section = this.getAttribute('data-section');
+
+        // Update active menu item
+        menuItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+
+        // Show corresponding section
+        contentSections.forEach(s => s.classList.add('hidden'));
+        document.getElementById(`${section}Section`).classList.remove('hidden');
+
+        // Reset form if switching to add item section
+        if (section === 'addItem') {
+          resetForm();
+        }
+
+        // Close sidebar on mobile
+        sidebar.classList.remove('active');
+      });
+    });
+
+    // Mobile menu toggle
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+    });
+
+    // Image preview
+    itemImage.addEventListener('change', function () {
+      const file = this.files[0];
+
+      if (file) {
+        // Check file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+          formMessage.textContent = 'File size must be less than 5MB.';
+          formMessage.style.color = '#d32f2f';
+          this.value = '';
+          imagePreview.innerHTML = '<span>Image Preview</span>';
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.addEventListener('load', function () {
+          imagePreview.innerHTML = `<img src="${this.result}" alt="Preview">`;
+        });
+
+        reader.readAsDataURL(file);
+      } else {
+        // If no file selected but we're editing, keep the current image
+        if (currentEditingId && currentImageUrl) {
+          imagePreview.innerHTML = `<img src="${currentImageUrl}" alt="Preview">`;
+        } else {
+          imagePreview.innerHTML = '<span>Image Preview</span>';
+        }
+      }
+    });
+
+    // Show notification
+    function showNotification(message, isError = false) {
+      notification.textContent = message;
+      notification.className = 'notification';
+      if (isError) notification.classList.add('error');
+      notification.classList.add('show');
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Login function
+    loginBtn.addEventListener('click', async function () {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        loginMessage.textContent = 'Please enter both email and password.';
+        return;
+      }
+
+      // Show loading state
+      loginText.classList.add('hidden');
+      loginSpinner.classList.remove('hidden');
+      loginBtn.disabled = true;
+
+      // Use Supabase Auth for login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        loginMessage.textContent = error.message;
+        showNotification('Login error: ' + error.message, true);
+        loginText.classList.remove('hidden');
+        loginSpinner.classList.add('hidden');
+        loginBtn.disabled = false;
+      } else {
+        loginPage.style.display = 'none';
+        adminPanel.style.display = 'flex';
+        userAvatar.textContent = data.user.email.charAt(0).toUpperCase();
+        userEmail.textContent = data.user.email;
+        loadDashboardData();
+        loadGalleryItems();
+        showNotification('Login successful!');
+
+        // Reset login button state
+        loginText.classList.remove('hidden');
+        loginSpinner.classList.add('hidden');
+        loginBtn.disabled = false;
+      }
+    });
+
+    // Logout function
+    async function logout() {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        showNotification('Logout error: ' + error.message, true);
+      } else {
+        loginPage.style.display = 'block';
+        adminPanel.style.display = 'none';
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+        loginMessage.textContent = '';
+        showNotification('Logged out successfully');
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        const { data, error } = await supabase
+          .from('gallery')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error) {
+          console.error('Error loading dashboard data:', error);
+          showNotification('Error loading dashboard data: ' + error.message, true);
+          return;
+        }
+
+        // Get total count
+        const { count } = await supabase
+          .from('gallery')
+          .select('*', { count: 'exact', head: true });
+
+        totalItemsEl.textContent = count || 0;
+
+        recentItemsEl.innerHTML = '';
+
+        if (data.length === 0) {
+          recentItemsEl.innerHTML = '<tr><td colspan="4" style="text-align: center;">No items found.</td></tr>';
+          return;
+        }
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+        <td>${item.title}</td>
+        <td>${new Date(item.created_at).toLocaleDateString()}</td>
+        <td><span class="status status-published">Published</span></td>
+        <td class="actions">
+          <button class="action-btn action-edit" data-id="${item.id}"><i class="fas fa-edit"></i></button>
+          <button class="action-btn action-delete" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+
+          // Add event listeners to buttons
+          row.querySelector('.action-edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            editItem(item.id);
+          });
+
+          row.querySelector('.action-delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteItem(item.id);
+          });
+
+          recentItemsEl.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Error:', err);
+        showNotification('Error loading dashboard: ' + err.message, true);
+      }
+    }
+
+    // Load gallery items
+    async function loadGalleryItems() {
+      try {
+        const { data, error } = await supabase
+          .from('gallery')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading gallery items:', error);
+          showNotification('Error loading gallery: ' + error.message, true);
+          return;
+        }
+
+        galleryItemsEl.innerHTML = '';
+
+        if (data.length === 0) {
+          galleryItemsEl.innerHTML = '<tr><td colspan="6" style="text-align: center;">No items found.</td></tr>';
+          return;
+        }
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+        <td><img src="${item.image_url}" alt="${item.title}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+        <td>${item.title}</td>
+        <td>${item.description ? (item.description.substring(0, 50) + (item.description.length > 50 ? '...' : '')) : ''}</td>
+        <td>${new Date(item.created_at).toLocaleDateString()}</td>
+        <td><span class="status status-published">Published</span></td>
+        <td class="actions">
+          <button class="action-btn action-edit" data-id="${item.id}"><i class="fas fa-edit"></i></button>
+          <button class="action-btn action-delete" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+
+          // Add event listeners to buttons
+          row.querySelector('.action-edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            editItem(item.id);
+          });
+
+          row.querySelector('.action-delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteItem(item.id);
+          });
+
+          galleryItemsEl.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Error:', err);
+        showNotification('Error loading gallery: ' + err.message, true);
+      }
+    }
+
+    // Edit item function
+    async function editItem(id) {
+      try {
+        // Fetch item data
+        const { data, error } = await supabase
+          .from('gallery')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          throw new Error('Error fetching item: ' + error.message);
+        }
+
+        // Switch to add item section
+        menuItems.forEach(i => i.classList.remove('active'));
+        document.querySelector('[data-section="addItem"]').classList.add('active');
+
+        contentSections.forEach(s => s.classList.add('hidden'));
+        document.getElementById('addItemSection').classList.remove('hidden');
+
+        // Populate form with item data
+        document.getElementById('itemTitle').value = data.title;
+        document.getElementById('itemDescription').value = data.description || '';
+
+        // Show current image
+        imagePreview.innerHTML = `<img src="${data.image_url}" alt="Preview">`;
+
+        // Store current image URL and ID
+        currentImageUrl = data.image_url;
+        currentEditingId = id;
+
+        // Change form button text
+        const submitButton = addItemForm.querySelector('button[type="submit"]');
+        submitButton.innerHTML = '<i class="fas fa-save"></i> Update Item';
+
+        // Update the image label to indicate it's optional
+        imageInputLabel.innerHTML = 'Image (Optional - leave empty to keep current image)';
+
+        // Remove the required attribute from the file input
+        itemImage.removeAttribute('required');
+
+        showNotification('Editing item: ' + data.title);
+      } catch (error) {
+        console.error('Error editing item:', error);
+        showNotification('Error editing item: ' + error.message, true);
+      }
+    }
+
+    // Delete item function
+    async function deleteItem(id) {
+      if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        // First get the item to find the image path for deletion from storage
+        const { data: itemData, error: fetchError } = await supabase
+          .from('gallery')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (fetchError) {
+          throw new Error('Error fetching item: ' + fetchError.message);
+        }
+
+        // Extract the file path from the URL for storage deletion
+        const url = new URL(itemData.image_url);
+        const pathParts = url.pathname.split('/');
+        const filePath = pathParts.slice(3).join('/'); // Remove '/storage/v1/object/public/'
+
+        // Delete from storage
+        const { error: storageError } = await supabase.storage
+          .from('gallery-images')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.warn('Could not delete image from storage:', storageError.message);
+          // Continue with database deletion even if storage deletion fails
+        }
+
+        // Delete from database
+        const { error: deleteError } = await supabase
+          .from('gallery')
+          .delete()
+          .eq('id', id);
+
+        if (deleteError) {
+          throw new Error('Error deleting item: ' + deleteError.message);
+        }
+
+        showNotification('Item deleted successfully!');
+
+        // Reload data
+        loadDashboardData();
+        loadGalleryItems();
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        showNotification('Error deleting item: ' + error.message, true);
+      }
+    }
+
+    // Reset form function
+    function resetForm() {
+      addItemForm.reset();
+      imagePreview.innerHTML = '<span>Image Preview</span>';
+      currentEditingId = null;
+      currentImageUrl = null;
+
+      // Reset button text
+      const submitButton = addItemForm.querySelector('button[type="submit"]');
+      submitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Add Item';
+
+      // Reset the image label and make it required again
+      imageInputLabel.innerHTML = 'Image *';
+      itemImage.setAttribute('required', 'true');
+    }
+
+    // Refresh gallery button
+    refreshGalleryBtn.addEventListener('click', () => {
+      loadGalleryItems();
+      showNotification('Gallery refreshed');
+    });
+
+    // Add new item form submission
+    addItemForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const title = document.getElementById('itemTitle').value;
+      const description = document.getElementById('itemDescription').value;
+      const imageFile = document.getElementById('itemImage').files[0];
+
+      if (!title) {
+        formMessage.textContent = 'Title is required.';
+        formMessage.style.color = '#d32f2f';
+        return;
+      }
+
+      // If creating new item, image is required
+      if (!currentEditingId && !imageFile) {
+        formMessage.textContent = 'Please select an image for new items.';
+        formMessage.style.color = '#d32f2f';
+        return;
+      }
+
+      formMessage.textContent = currentEditingId ? 'Updating...' : 'Uploading...';
+      formMessage.style.color = '#1976d2';
+
+      // Show progress bar
+      progressBarContainer.style.display = 'block';
+      progressBar.style.width = '0%';
+
+      try {
+        let imageUrl = currentImageUrl;
+
+        // If a new image was uploaded
+        if (imageFile) {
+          // Upload image to Supabase Storage first
+          const fileExt = imageFile.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `gallery/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('gallery-images')
+            .upload(filePath, imageFile, {
+              cacheControl: '3600',
+              upsert: false,
+              onProgress: (event) => {
+                progressBar.style.width = `${(event.loaded / event.total) * 100}%`;
+              }
+            });
+
+          if (uploadError) {
+            throw new Error('Upload error: ' + uploadError.message);
+          }
+
+          // Get public URL for the uploaded image
+          const { data: urlData } = supabase.storage
+            .from('gallery-images')
+            .getPublicUrl(filePath);
+
+          imageUrl = urlData.publicUrl;
+        }
+
+        if (currentEditingId) {
+          // Update existing item
+          const updateData = {
+            title: title,
+            description: description
+          };
+
+          // Only update image URL if a new image was uploaded
+          if (imageFile) {
+            updateData.image_url = imageUrl;
+          }
+
+          const { error: updateError } = await supabase
+            .from('gallery')
+            .update(updateData)
+            .eq('id', currentEditingId);
+
+          if (updateError) {
+            throw new Error('Update error: ' + updateError.message);
+          }
+
+          formMessage.textContent = 'Item updated successfully!';
+          showNotification('Item updated successfully!');
+        } else {
+          // Create new item
+          const { error: insertError } = await supabase
+            .from('gallery')
+            .insert([
+              {
+                title: title,
+                description: description,
+                image_url: imageUrl
+              }
+            ]);
+
+          if (insertError) {
+            throw new Error('Database error: ' + insertError.message);
+          }
+
+          formMessage.textContent = 'Item added successfully!';
+          showNotification('Item added successfully!');
+        }
+
+        formMessage.style.color = '#0c7c59';
+
+        // Reset form
+        resetForm();
+        progressBarContainer.style.display = 'none';
+
+        // Reload data
+        loadDashboardData();
+        loadGalleryItems();
+
+      } catch (error) {
+        console.error('Error saving item:', error);
+        formMessage.textContent = 'Error: ' + error.message;
+        formMessage.style.color = '#d32f2f';
+        progressBarContainer.style.display = 'none';
+        showNotification('Error: ' + error.message, true);
+      }
+    });
+
+    // PWA Features
+
+    // App Install Prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Show the install button
+      installPrompt.classList.remove('hidden');
+
+      installAppBtn.addEventListener('click', () => {
+        // Hide the app provided install promotion
+        installPrompt.classList.add('hidden');
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      });
+    });
+
+    dismissInstallBtn.addEventListener('click', () => {
+      installPrompt.classList.add('hidden');
+    });
+
+    // Clear cache
+    clearCacheBtn.addEventListener('click', () => {
+      if ('caches' in window) {
+        caches.keys().then((cacheNames) => {
+          cacheNames.forEach((cacheName) => {
+            caches.delete(cacheName);
+          });
+        });
+        showNotification('Cache cleared successfully');
+      } else {
+        showNotification('Cache API not supported', true);
+      }
+    });
+
+    // Check for updates
+    checkUpdateBtn.addEventListener('click', () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if (reg) {
+            reg.update().then(() => {
+              showNotification('Checked for updates');
+            });
+          }
+        });
+      }
+    });
+
+    // Sync pending changes when coming back online
+    function syncPendingChanges() {
+      // This would sync any locally stored changes when coming back online
+      syncIndicator.style.display = 'block';
+      setTimeout(() => {
+        syncIndicator.style.display = 'none';
+        showNotification('Data synced successfully');
+      }, 2000);
+    }
+
+    // Pull to refresh
+    let touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      const touchY = e.touches[0].clientY;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      if (touchY > touchStartY && scrollTop === 0) {
+        pullToRefresh.style.display = 'block';
+      } else {
+        pullToRefresh.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (pullToRefresh.style.display === 'block') {
+        loadDashboardData();
+        loadGalleryItems();
+        showNotification('Content refreshed');
+      }
+      pullToRefresh.style.display = 'none';
+    });
+    // Register the service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function (registration) {
+            console.log('SW registered: ', registration);
+          })
+          .catch(function (registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Check authentication status on page load
+    checkAuth();
+  </script>
+</body>
+
+</html>
